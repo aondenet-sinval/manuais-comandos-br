@@ -1,0 +1,3 @@
+Tradução documentação curl.  
+Listando manuais mais usados...  
+... apenas txt.

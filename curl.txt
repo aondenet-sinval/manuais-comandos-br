@@ -1,0 +1,586 @@
+Manual CURL traduzido
+Uso Simples
+Obtenha a página principal de um servidor web:
+
+curl https://www.example.com/
+Obtenha um arquivo README de um servidor FTP:
+
+curl ftp://ftp.funet.fi/README
+Obtenha uma página da Web de um servidor usando a porta 8000:
+
+curl http://www.weirdserver.com:8000/
+Obtenha uma lista de diretórios de um site FTP:
+
+curl ftp://ftp.funet.fi
+Obtenha todos os termos correspondentes ao curl em um dicionário:
+
+curl dict://dict.org/m:curl
+Obtenha a definição de curl em um dicionário:
+
+curl dict://dict.org/d:curl
+Buscar dois documentos de uma só vez:
+
+curl ftp://ftp.funet.fi/ http://www.weirdserver.com:8000/
+Obtenha um arquivo de um servidor FTPS:
+
+curl ftps://files.are.secure.com/secrets.txt
+ou use a maneira FTPS mais apropriada para obter o mesmo arquivo:
+
+curl --ftp-ssl ftp://files.are.secure.com/secrets.txt
+Obtenha um arquivo de um servidor SSH usando SFTP:
+
+curl -u username sftp://example.com/etc/issue
+Obtenha um arquivo de um servidor SSH usando SCP usando uma chave privada (não protegida por senha) para autenticar:
+
+curl -u username: --key ~/.ssh/id_rsa scp://example.com/~/file.txt
+Obtenha um arquivo de um servidor SSH usando SCP usando uma chave privada (protegida por senha) para autenticar:
+
+curl -u username: --key ~/.ssh/id_rsa --pass private_key_password
+scp://example.com/~/file.txt
+Obtenha a página principal de um servidor web IPv6:
+
+curl "http://[2001:1890:1112:1::20]/"
+Obtenha um arquivo de um servidor SMB:
+
+curl -u "domain\username:passwd" smb://server.example.com/share/file.txt
+Baixar para um arquivo
+Obtenha uma página da Web e armazene em um arquivo local com um nome específico:
+
+curl -o thatpage.html http://www.example.com/
+Obtenha uma página da Web e armazene em um arquivo local, faça com que o arquivo local obtenha o nome do documento remoto (se nenhuma parte do nome do arquivo for especificada na URL, isso falhará):
+
+curl -O http://www.example.com/index.html
+Busque dois arquivos e armazene-os com seus nomes remotos:
+
+curl -O www.haxx.se/index.html -O curl.se/download.html
+Usando Senhas
+FTP
+Para arquivos ftp usando nome e senha, inclua-os na URL como:
+
+curl ftp://name:passwd@machine.domain:port/full/path/to/file
+ou especifique-os com o -usinalizador como
+
+curl -u name:passwd ftp://machine.domain:port/full/path/to/file
+FTPS
+É exatamente como no FTP, mas você também pode especificar e usar opções específicas de SSL para certificados, etc.
+
+Observe que usar FTPS://como prefixo é a maneira implícita descrita nos padrões, enquanto a maneira explícita recomendada é feita usando FTP://e a --ssl-reqdopção.
+
+SFTP/SCP
+Isso é semelhante ao FTP, mas você pode usar a --keyopção de especificar uma chave privada para usar em vez de uma senha. Observe que a própria chave privada pode ser protegida por uma senha não relacionada à senha de login do sistema remoto; esta senha é especificada usando a --passopção. Normalmente, o curl extrai automaticamente a chave pública do arquivo de chave privada, mas nos casos em que o curl não possui o suporte de biblioteca adequado, um arquivo de chave pública correspondente deve ser especificado usando a opção --pubkey.
+
+HTTP
+Curl também suporta usuário e senha em URLs HTTP, assim você pode escolher um arquivo como:
+
+curl http://name:passwd@machine.domain/full/path/to/file
+ou especifique usuário e senha separadamente como em
+
+curl -u name:passwd http://machine.domain/full/path/to/file
+O HTTP oferece muitos métodos diferentes de autenticação e o curl suporta vários: Basic, Digest, NTLM e Negotiate (SPNEGO). Sem dizer qual método usar, o padrão curl é Básico. Você também pode pedir ao curl para escolher os mais seguros dentre aqueles que o servidor aceita para o URL fornecido, usando --anyauth.
+
+Nota ! De acordo com a especificação de URL, os URLs HTTP não podem conter um usuário e senha, portanto, esse estilo não funcionará ao usar o curl por meio de um proxy, embora o curl permita isso em outros momentos. Ao usar um proxy, você deve usar o -uestilo de usuário e senha.
+
+HTTPS
+Provavelmente mais comumente usado com certificados privados, conforme explicado abaixo.
+
+Proxy
+curl oferece suporte a servidores proxy HTTP e SOCKS, com autenticação opcional. Ele não tem suporte especial para servidores proxy FTP, pois não há padrões para eles, mas ainda pode funcionar com muitos deles. Você também pode usar os proxies HTTP e SOCKS para transferir arquivos de e para servidores FTP.
+
+Obtenha um arquivo ftp usando um proxy HTTP chamado my-proxy que usa a porta 888:
+
+curl -x my-proxy:888 ftp://ftp.leachsite.com/README
+Obtenha um arquivo de um servidor HTTP que requer usuário e senha, usando o mesmo proxy acima:
+
+curl -u user:passwd -x my-proxy:888 http://www.get.this/
+Alguns proxies requerem autenticação especial. Especifique usando -U como acima:
+
+curl -U user:passwd -x my-proxy:888 http://www.get.this/
+Uma lista separada por vírgulas de hosts e domínios que não usam o proxy pode ser especificada como:
+
+curl --noproxy localhost,get.this -x my-proxy:888 http://www.get.this/
+Se o proxy for especificado com --proxy1.0em vez de --proxyou -x, o curl usará HTTP/1.0 em vez de HTTP/1.1 para todas as CONNECTtentativas.
+
+curl também suporta proxies SOCKS4 e SOCKS5 com --socks4e --socks5.
+
+Veja também as variáveis ​​de ambiente suportadas pelo Curl que oferecem mais controle de proxy.
+
+A maioria dos servidores proxy FTP são configurados para aparecer como um servidor FTP normal da perspectiva do cliente, com comandos especiais para selecionar o servidor FTP remoto. curl oferece suporte às opções -u, -Qe --ftp-accountque podem ser usadas para configurar transferências por meio de muitos proxies FTP. Por exemplo, um arquivo pode ser carregado em um servidor FTP remoto usando um proxy FTP Blue Coat com as opções:
+
+curl -u "username@ftp.server Proxy-Username:Remote-Pass"
+  --ftp-account Proxy-Password --upload-file local-file
+  ftp://my-ftp.proxy.server:21/remote/upload/path/
+Consulte o manual do seu proxy FTP para determinar a forma que ele espera para configurar as transferências e -va opção do curl para ver exatamente o que o curl está enviando.
+
+Tubulação
+Obtenha um arquivo de chave e adicione-o apt-key(quando estiver em um sistema que usa aptpara gerenciamento de pacotes):
+
+curl -L https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+O '|' canaliza a saída para STDIN. -informa apt-keyque o arquivo de chave deve ser lido de STDIN.
+
+Gamas
+HTTP 1.1 introduziu intervalos de bytes. Usando isso, um cliente pode solicitar obter apenas uma ou mais subpartes de um documento especificado. Curl apóia isso com a -rbandeira.
+
+Obtenha os primeiros 100 bytes de um documento:
+
+curl -r 0-99 http://www.get.this/
+Obtenha os últimos 500 bytes de um documento:
+
+curl -r -500 http://www.get.this/
+O Curl também oferece suporte a intervalos simples para arquivos FTP. Então você só pode especificar a posição de início e parada.
+
+Obtenha os primeiros 100 bytes de um documento usando FTP:
+
+curl -r 0-99 ftp://www.get.this/README
+Enviando
+FTP / FTPS / SFTP / SCP
+Carregue todos os dados em stdin para um servidor especificado:
+
+curl -T - ftp://ftp.upload.com/myfile
+Carregar dados de um arquivo especificado, faça o login com usuário e senha:
+
+curl -T uploadfile -u user:passwd ftp://ftp.upload.com/myfile
+Carregue um arquivo local para o site remoto e use o nome do arquivo local no site remoto também:
+
+curl -T uploadfile -u user:passwd ftp://ftp.upload.com/
+Carregue um arquivo local para ser anexado ao arquivo remoto:
+
+curl -T localfile -a ftp://ftp.upload.com/remotefile
+O Curl também suporta upload de FTP por meio de um proxy, mas somente se o proxy estiver configurado para permitir esse tipo de encapsulamento. Em caso afirmativo, você pode executar o curl de maneira semelhante a:
+
+curl --proxytunnel -x proxy:port -T localfile ftp.upload.com
+SMB / SMB
+curl -T file.txt -u "domain\username:passwd"
+  smb://server.example.com/share/
+HTTP
+Carregue todos os dados em stdin para um site HTTP especificado:
+
+curl -T - http://www.upload.com/myfile
+Observe que o servidor HTTP deve ter sido configurado para aceitar PUT antes que isso possa ser feito com sucesso.
+
+Para outras maneiras de fazer upload de dados HTTP, consulte a seção POST abaixo.
+
+Detalhado / Depurar
+Se o curl falhar onde não deveria, se os servidores não deixarem você entrar, se você não conseguir entender as respostas: use o -vsinalizador para obter uma busca detalhada. O Curl produzirá muitas informações e o que ele envia e recebe para permitir que o usuário veja toda a interação cliente-servidor (mas não mostrará os dados reais).
+
+curl -v ftp://ftp.upload.com/
+Para obter ainda mais detalhes e informações sobre o que o curl faz, tente usar as opções --traceou --trace-asciicom um determinado nome de arquivo para logar, assim:
+
+curl --trace trace.txt www.haxx.se
+Informação detalhada
+Protocolos diferentes fornecem maneiras diferentes de obter informações detalhadas sobre arquivos/documentos específicos. Para que o curl mostre informações detalhadas sobre um único arquivo, você deve usar a opção -I/ --head. Ele exibe todas as informações disponíveis em um único arquivo para HTTP e FTP. As informações HTTP são muito mais extensas.
+
+Para HTTP, você pode obter as informações do cabeçalho (as mesmas que -Iseriam exibidas) mostradas antes dos dados usando -i/ --include. O Curl entende a opção -D/ --dump-headerao obter arquivos de FTP e HTTP e armazenará os cabeçalhos no arquivo especificado.
+
+Armazene os cabeçalhos HTTP em um arquivo separado (headers.txt no exemplo):
+
+  curl --dump-header headers.txt curl.se
+Observe que os cabeçalhos armazenados em um arquivo separado podem ser úteis posteriormente se você quiser usar cookies enviados pelo servidor. Mais sobre isso na seção de cookies.
+
+POST (HTTP)
+É fácil postar dados usando curl. Isso é feito usando a -d <data>opção. Os dados da postagem devem ser codificados por urlen.
+
+Publique um livro simples namee phonede visitas.
+
+curl -d "name=Rafael%20Sagula&phone=3320780" http://www.where.com/guest.cgi
+Ou codifica automaticamente a URL dos dados .
+
+curl --data-urlencode "name=Rafael Sagula&phone=3320780" http://www.where.com/guest.cgi
+Como postar um formulário com curl, lição nº 1:
+
+Desenterre todas as <input>tags no formulário que você deseja preencher.
+
+Se houver um post normal, você usa -dpara postar. -dpega uma string de postagem completa, que está no formato
+
+<variable1>=<data1>&<variable2>=<data2>&...
+Os nomes das variáveis ​​são os nomes definidos "name="nas <input>tags e os dados são o conteúdo que você deseja preencher para as entradas. Os dados devem ser devidamente codificados em URL. Isso significa que você substitui o espaço por + e que substitui as letras estranhas por %XXonde XXestá a representação hexadecimal do código ASCII da letra.
+
+Exemplo:
+
+(página localizada em http://www.formpost.com/getthis/)
+
+<form action="post.cgi" method="post">
+<input name=user size=10>
+<input name=pass type=password size=10>
+<input name=id type=hidden value="blablabla">
+<input name=ding value="submit">
+</form>
+Queremos inserir o usuário foobarcom a senha 12345.
+
+Para postar nisso, você insere uma linha de comando curl como:
+
+curl -d "user=foobar&pass=12345&id=blablabla&ding=submit"
+  http://www.formpost.com/getthis/post.cgi
+Embora -duse o tipo mime application/x-www-form-urlencoded, geralmente entendido por CGIs e similares, o curl também suporta o tipo multipart/form-data mais capaz. Este último tipo oferece suporte a coisas como upload de arquivo.
+
+-Faceita parâmetros como -F "name=contents". Se você deseja que o conteúdo seja lido de um arquivo, use @filenamecomo conteúdo. Ao especificar um arquivo, você também pode especificar o tipo de conteúdo do arquivo anexando ;type=<mime type>ao nome do arquivo. Você também pode postar o conteúdo de vários arquivos em um campo. Por exemplo, o nome do campo coolfilesé usado para enviar três arquivos, com diferentes tipos de conteúdo usando a seguinte sintaxe:
+
+curl -F "coolfiles=@fil1.gif;type=image/gif,fil2.txt,fil3.html"
+  http://www.post.com/postit.cgi
+Se o tipo de conteúdo não for especificado, o curl tentará adivinhar a extensão do arquivo (só conhece alguns) ou usará o tipo especificado anteriormente (de um arquivo anterior se vários arquivos forem especificados em uma lista) ou então use o tipo padrão application/octet-stream.
+
+Emular um formulário de preenchimento com -F. Digamos que você preencha três campos em um formulário. Um campo é um nome de arquivo a ser postado, um campo é seu nome e um campo é uma descrição de arquivo. Queremos postar o arquivo que escrevemos chamado cooltext.txt. Para permitir que o curl faça a postagem desses dados em vez de seu navegador favorito, você deve ler o código-fonte HTML da página do formulário e encontrar os nomes dos campos de entrada. Em nosso exemplo, os nomes dos campos de entrada são file, yournamee filedescription.
+
+curl -F "file=@cooltext.txt" -F "yourname=Daniel"
+  -F "filedescription=Cool text file with cool text inside"
+  http://www.post.com/postit.cgi
+Para enviar dois arquivos em um único post você pode fazer de duas formas:
+
+Envie vários arquivos em um único campo com um único nome de campo:
+
+curl -F "pictures=@dog.gif,cat.gif" $URL
+Envie dois campos com dois nomes de campo
+
+curl -F "docpicture=@dog.gif" -F "catpicture=@cat.gif" $URL
+Para enviar um valor de campo literalmente sem interpretar um @ou à esquerda <, ou um incorporado ;type=, use --form-stringem vez de -F. Isso é recomendado quando o valor é obtido de um usuário ou de alguma outra fonte imprevisível. Nessas circunstâncias, usar -Fem vez de --form-stringpode permitir que um usuário engane o curl para fazer upload de um arquivo.
+
+Referenciador
+Uma solicitação HTTP tem a opção de incluir informações sobre qual endereço a encaminhou para a página real. curl permite que você especifique o referenciador a ser usado na linha de comando. É especialmente útil para enganar ou enganar servidores estúpidos ou scripts CGI que dependem da disponibilidade dessas informações ou contêm determinados dados.
+
+curl -e www.coolsite.com http://www.showme.com/
+Agente de usuário
+Uma solicitação HTTP tem a opção de incluir informações sobre o navegador que gerou a solicitação. Curl permite que seja especificado na linha de comando. É especialmente útil para enganar ou enganar servidores estúpidos ou scripts CGI que aceitam apenas determinados navegadores.
+
+Exemplo:
+
+curl -A 'Mozilla/3.0 (Win95; I)' http://www.nationsbank.com/
+Outras sequências comuns:
+
+Mozilla/3.0 (Win95; I)- Netscape Versão 3 para Windows 95
+Mozilla/3.04 (Win95; U)- Netscape Versão 3 para Windows 95
+Mozilla/2.02 (OS/2; U)- Netscape Versão 2 para OS/2
+Mozilla/4.04 [en] (X11; U; AIX 4.2; Nav)- Netscape para AIX
+Mozilla/4.05 [en] (X11; U; Linux 2.0.32 i586)-Netscape para Linux
+Observe que o Internet Explorer se esforça para ser compatível em todos os sentidos:
+
+Mozilla/4.0 (compatible; MSIE 4.01; Windows 95)- MSIE para W95
+Mozilla não é o único nome de User-Agent possível:
+
+Konqueror/1.0- Cliente de área de trabalho do gerenciador de arquivos do KDE
+Lynx/2.7.1 libwww-FM/2.14- Navegador de linha de comando Lynx
+Biscoitos
+Os cookies geralmente são usados ​​por servidores da Web para manter informações de estado no lado do cliente. O servidor define cookies enviando uma linha de resposta nos cabeçalhos que se parece com Set-Cookie: <data>o local onde a parte de dados geralmente contém um conjunto de NAME=VALUEpares (separados por ponto-e-vírgula ;como NAME1=VALUE1; NAME2=VALUE2;). O servidor também pode especificar para qual caminho o cookie deve ser usado (especificando path=value), quando o cookie deve expirar ( expire=DATE), para qual domínio usá-lo ( domain=NAME) e se deve ser usado apenas em conexões seguras ( secure).
+
+Se você recebeu uma página de um servidor que contém um cabeçalho como:
+
+Set-Cookie: sessionid=boo123; path="/foo";
+isso significa que o servidor deseja que o primeiro par seja transmitido quando obtivermos qualquer coisa em um caminho que comece com /foo.
+
+Exemplo, obter uma página que deseja que meu nome seja passado em um cookie:
+
+curl -b "name=Daniel" www.sillypage.com
+O Curl também tem a capacidade de usar cookies recebidos anteriormente nas sessões seguintes. Se você obtiver cookies de um servidor e armazená-los em um arquivo de maneira semelhante a:
+
+curl --dump-header headers www.example.com
+... você pode então em um segundo se conectar a esse (ou outro) site, usar os cookies do headers.txtarquivo como:
+
+curl -b headers.txt www.example.com
+Embora salvar cabeçalhos em um arquivo seja uma maneira funcional de armazenar cookies, ela é propensa a erros e não é a maneira preferida de fazer isso. Em vez disso, faça o curl salvar os cookies recebidos usando o conhecido formato de cookie do Netscape como este:
+
+curl -c cookies.txt www.example.com
+Observe que, ao especificar, -bvocê habilita o mecanismo de cookie e com -Lele pode fazer o curl seguir um location:(que geralmente é usado em combinação com cookies). Se um site enviar cookies e um campo de localização, você pode usar um arquivo inexistente para acionar o reconhecimento de cookies como:
+
+curl -L -b empty.txt www.example.com
+O arquivo para ler os cookies deve ser formatado usando cabeçalhos HTTP simples OU como arquivo de cookie do Netscape. O Curl determinará de que tipo é baseado no conteúdo do arquivo. No comando acima, o curl analisará o cabeçalho e armazenará os cookies recebidos de www.example.com . curl enviará ao servidor os cookies armazenados que correspondem à solicitação à medida que segue o local. O arquivo empty.txtpode ser um arquivo inexistente.
+
+Para ler e gravar cookies de um arquivo de cookies do Netscape, você pode definir ambos -be -cusar o mesmo arquivo:
+
+curl -b cookies.txt -c cookies.txt www.example.com
+medidor de progresso
+O medidor de progresso existe para mostrar ao usuário que algo realmente está acontecendo. Os diferentes campos na saída têm o seguinte significado:
+
+% Total    % Received % Xferd  Average Speed          Time             Curr.
+                               Dload  Upload Total    Current  Left    Speed
+0  151M    0 38608    0     0   9406      0  4:41:43  0:00:04  4:41:39  9287
+Da esquerda para a direita:
+
+%- porcentagem concluída de toda a transferência
+Total- tamanho total de toda a transferência esperada
+%- porcentagem concluída do download
+Received- quantidade atualmente baixada de bytes
+%- porcentagem concluída do upload
+Xferd- quantidade atualmente carregada de bytes
+Average Speed Dload- a velocidade média de transferência do download
+Average Speed Upload- a velocidade média de transferência do upload
+Time Total- tempo previsto para concluir a operação
+Time Current- tempo passado desde a invocação
+Time Left- tempo previsto restante para a conclusão
+Curr.Speed- a velocidade média de transferência nos últimos 5 segundos (os primeiros 5 segundos de uma transferência são baseados em menos tempo de curso).
+A -#opção exibirá uma barra de progresso totalmente diferente que não precisa de muita explicação!
+
+limite de velocidade
+Curl permite que o usuário defina as condições de velocidade de transferência que devem ser atendidas para permitir que a transferência continue. Ao usar a chave -ye -Yvocê pode fazer transferências de cancelamento de curvatura se a velocidade de transferência estiver abaixo do limite mínimo especificado por um tempo especificado.
+
+Para que o curl aborte o download se a velocidade for inferior a 3000 bytes por segundo por 1 minuto, execute:
+
+curl -Y 3000 -y 60 www.far-away-site.com
+Isso pode ser usado em combinação com o limite de tempo geral, para que a operação acima seja concluída em 30 minutos:
+
+curl -m 1800 -Y 3000 -y 60 www.far-away-site.com
+Também é possível forçar o curl a não transferir dados mais rápido do que uma determinada taxa, o que pode ser útil se você estiver usando uma conexão de largura de banda limitada e não quiser que sua transferência use tudo isso (às vezes chamado de acelerador de largura de banda ) .
+
+Faça com que os dados de transferência de curl não sejam mais rápidos do que 10 kilobytes por segundo:
+
+curl --limit-rate 10K www.far-away-site.com
+ou
+
+curl --limit-rate 10240 www.far-away-site.com
+Ou evite que o curl carregue dados mais rápido que 1 megabyte por segundo:
+
+curl -T upload --limit-rate 1M ftp://uploadshereplease.com
+Ao usar a --limit-rateopção, a taxa de transferência é regulada por segundo, o que fará com que a velocidade total de transferência fique menor do que o número fornecido. Às vezes, é claro, substancialmente mais baixo, se sua transferência parar durante os períodos.
+
+Arquivo de configuração
+Curl tenta automaticamente ler o .curlrcarquivo (ou _curlrcarquivo em sistemas Microsoft Windows) do diretório inicial do usuário na inicialização.
+
+O arquivo de configuração pode ser feito com opções normais de linha de comando, mas você também pode especificar as opções longas sem os traços para torná-lo mais legível. Você pode separar as opções e o parâmetro com espaços, ou com =ou :. Comentários podem ser usados ​​dentro do arquivo. Se a primeira letra de uma linha for um #símbolo -, o restante da linha será tratado como um comentário.
+
+Se quiser que o parâmetro contenha espaços, você deve colocar o parâmetro inteiro entre aspas duplas ( "). Dentro dessas aspas, você especifica uma citação como \".
+
+NOTA: Você deve especificar as opções e seus argumentos na mesma linha.
+
+Exemplo, defina o tempo limite padrão e o proxy em um arquivo de configuração:
+
+# We want a 30 minute timeout:
+-m 1800
+#. .. and we use a proxy for all accesses:
+proxy = proxy.our.domain.com:8080
+Os espaços em branco SÃO significativos no final das linhas, mas todos os espaços em branco que antecedem os primeiros caracteres de cada linha são ignorados.
+
+Evite que o curl leia o arquivo padrão usando -q como o primeiro parâmetro da linha de comando, como:
+
+curl -q www.thatsite.com
+Force o curl para obter e exibir uma página de ajuda local, caso seja invocado sem URL, criando um arquivo de configuração semelhante a:
+
+# default url to get
+url = "http://help.with.curl.com/curlhelp.html"
+Você pode especificar outro arquivo de configuração a ser lido usando o sinalizador -K/ --config. Se você definir o nome do arquivo de configuração, -ele lerá a configuração do stdin, o que pode ser útil se você quiser ocultar as opções de serem visíveis nas tabelas de processos, etc.:
+
+echo "user = user:passwd" | curl -K - http://that.secret.site.com
+Cabeçalhos extras
+Ao usar o curl em seus próprios programas, você pode acabar precisando passar seus próprios cabeçalhos personalizados ao obter uma página da web. Você pode fazer isso usando o -Hsinalizador.
+
+Exemplo, envie o cabeçalho X-you-and-me: yespara o servidor ao obter uma página:
+
+curl -H "X-you-and-me: yes" www.love.com
+Isso também pode ser útil caso você queira que o curl envie um texto diferente em um cabeçalho do que normalmente. O -Hcabeçalho que você especificar substituirá a curvatura do cabeçalho que normalmente enviaria. Se você substituir um cabeçalho interno por um vazio, impedirá que esse cabeçalho seja enviado. Para evitar que o Host:cabeçalho seja usado:
+
+curl -H "Host:" www.server.com
+FTP e nomes de caminho
+Observe que, ao obter arquivos com um ftp://URL, o caminho fornecido é relativo ao diretório inserido. Para obter o arquivo READMEde seu diretório pessoal em seu site ftp, faça:
+
+curl ftp://user:passwd@my.site.com/README
+Se você deseja o arquivo README do diretório raiz desse mesmo site, precisa especificar o nome absoluto do arquivo:
+
+curl ftp://user:passwd@my.site.com//README
+(Ou seja, com uma barra extra na frente do nome do arquivo.)
+
+SFTP e SCP e nomes de caminho
+Com URLs sftp: e scp:, o nome do caminho fornecido é o nome absoluto no servidor. Para acessar um arquivo relativo ao diretório inicial do usuário remoto, prefixe o arquivo com /~/, como:
+
+curl -u $USER sftp://home.example.com/~/.bashrc
+FTP e Firewall
+O protocolo FTP exige que uma das partes envolvidas abra uma segunda conexão assim que os dados estiverem prestes a ser transferidos. Existem duas maneiras de fazer isso.
+
+A maneira padrão para curl é emitir o comando PASV que faz com que o servidor abra outra porta e aguarde outra conexão realizada pelo cliente. Isso é bom se o cliente estiver atrás de um firewall que não permite conexões de entrada.
+
+curl ftp.download.com
+Se o servidor, por exemplo, estiver atrás de um firewall que não permite conexões em portas diferentes da 21 (ou simplesmente não suporta o PASVcomando), a outra forma de fazer isso é usar o PORTcomando e instruir o servidor a se conectar para o cliente no número IP e porta fornecidos (como parâmetros para o comando PORT).
+
+O -Psinalizador para enrolar oferece suporte a algumas opções diferentes. Sua máquina pode ter vários endereços IP e/ou interfaces de rede e o curl permite que você selecione qual deles usar. O endereço padrão também pode ser usado:
+
+curl -P - ftp.download.com
+Baixe com PORTmas use o endereço IP da nossa le0interface (isso não funciona no Windows):
+
+curl -P le0 ftp.download.com
+Baixe com, PORTmas use 192.168.0.10 como nosso endereço IP para usar:
+
+curl -P 192.168.0.10 ftp.download.com
+Interface de rede
+Obtenha uma página da Web de um servidor usando uma porta especificada para a interface:
+
+curl --interface eth0:1 http://www.example.com/
+ou
+
+curl --interface 192.168.1.10 http://www.example.com/
+HTTPS
+O HTTP seguro requer que uma biblioteca TLS seja instalada e usada quando o curl é criado. Se isso for feito, o curl é capaz de recuperar e postar documentos usando o protocolo HTTPS.
+
+Exemplo:
+
+curl https://www.secure-site.com
+curl também é capaz de usar certificados de cliente para obter/postar arquivos de sites que exigem certificados válidos. A única desvantagem é que o certificado precisa estar no formato PEM. PEM é um formato padrão e aberto para armazenar certificados, mas não é usado pelos navegadores mais usados. Se você deseja que o curl use os certificados que usa com seu navegador favorito, pode ser necessário baixar/compilar um conversor que pode converter os certificados formatados do seu navegador em certificados formatados em PEM.
+
+Exemplo de como recuperar automaticamente um documento usando um certificado com uma senha pessoal:
+
+curl -E /path/to/cert.pem:password https://secure.site.com/
+Se você deixar de especificar a senha na linha de comando, será solicitada a senha correta antes que qualquer dado possa ser recebido.
+
+Muitos servidores HTTPS mais antigos têm problemas com versões específicas de SSL ou TLS, que as versões mais recentes do OpenSSL etc usam, portanto, às vezes é útil especificar qual versão do TLS o curl deve usar.:
+
+curl --tlv1.0 https://secure.site.com/
+Caso contrário, o curl tentará usar uma versão padrão TLS sensata.
+
+Retomar transferências de arquivos
+Para continuar uma transferência de arquivo onde foi abortada anteriormente, o curl oferece suporte à retomada de downloads HTTP(S), bem como uploads e downloads FTP.
+
+Continue baixando um documento:
+
+curl -C - -o file ftp://ftp.server.com/path/file
+Continuar carregando um documento:
+
+curl -C - -T file ftp://ftp.server.com/path/file
+Continuar baixando um documento de um servidor web
+
+curl -C - -o file http://www.server.com/
+Condições de tempo
+O HTTP permite que um cliente especifique uma condição de tempo para o documento que solicita. é If-Modified-Sinceou If-Unmodified-Since. curl permite que você os especifique com o sinalizador -z/ --time-cond.
+
+Por exemplo, você pode facilmente fazer um download que só é executado se o arquivo remoto for mais recente que uma cópia local. Seria feito assim:
+
+curl -z local.html http://remote.server.com/remote.html
+Ou você pode baixar um arquivo apenas se o arquivo local for mais recente que o remoto. Faça isso anexando a string de data com um -, como em:
+
+curl -z -local.html http://remote.server.com/remote.html
+Você pode especificar uma data de texto simples como condição. Diga ao curl para baixar o arquivo apenas se ele foi atualizado desde 12 de janeiro de 2012:
+
+curl -z "Jan 12 2012" http://remote.server.com/remote.html
+curl aceita uma ampla variedade de formatos de data. Você sempre faz a verificação da data ao contrário, acrescentando-a com um traço ( -).
+
+DICT
+Para se divertir tente
+
+curl dict://dict.org/m:curl
+curl dict://dict.org/d:heisenbug:jargon
+curl dict://dict.org/d:daniel:gcide
+Aliases para mare matche find, e aliases para dare definee lookup. Por exemplo,
+
+curl dict://dict.org/find:curl
+Os comandos que quebram a descrição do URL do RFC (mas não o protocolo DICT) são
+
+curl dict://dict.org/show:db
+curl dict://dict.org/show:strat
+O suporte de autenticação ainda está ausente
+
+LDAP
+Se você instalou a biblioteca OpenLDAP, o curl pode aproveitá-la e oferecer ldap://suporte. No Windows, o curl usará o WinLDAP do Platform SDK por padrão.
+
+A versão de protocolo padrão usada pelo curl é a versão 3 do LDAP. A versão 2 será usada como um mecanismo de fallback caso a versão 3 não consiga se conectar.
+
+O LDAP é uma coisa complexa e escrever uma consulta LDAP não é uma tarefa fácil. Familiarize-se com a descrição exata da sintaxe em outro lugar. Um desses lugares pode ser: RFC 2255, The LDAP URL Format
+
+Para mostrar um exemplo, veja como obter todas as pessoas de um servidor LDAP que possui um determinado subdomínio em seu endereço de e-mail:
+
+curl -B "ldap://ldap.frontec.se/o=frontec??sub?mail=*sth.frontec.se"
+Você também pode usar a autenticação ao acessar o catálogo LDAP:
+
+curl -u user:passwd "ldap://ldap.frontec.se/o=frontec??sub?mail=*"
+curl "ldap://user:passwd@ldap.frontec.se/o=frontec??sub?mail=*"
+Por padrão, se o usuário e a senha forem fornecidos, o OpenLDAP/WinLDAP usará a autenticação básica. No Windows, você pode controlar esse comportamento fornecendo uma das opções ou na linha de comando --basiccurl--ntlm--digest
+
+curl --ntlm "ldap://user:passwd@ldap.frontec.se/o=frontec??sub?mail=*"
+No Windows, se nenhum usuário/senha for especificado, o mecanismo de negociação automática será usado com as credenciais de logon atuais (SSPI/SPNEGO).
+
+variáveis ​​ambientais
+Curl lê e entende as seguintes variáveis ​​de ambiente:
+
+http_proxy, HTTPS_PROXY, FTP_PROXY
+Eles devem ser definidos para proxies específicos do protocolo. A procuração geral deve ser definida com
+
+ALL_PROXY
+Uma lista separada por vírgulas de nomes de host que não devem passar por nenhum proxy é definida (apenas um asterisco, *corresponde a todos os hosts)
+
+NO_PROXY
+Se o nome do host corresponder a uma dessas strings ou se o host estiver no domínio de uma dessas strings, as transações com esse nó não serão feitas pelo proxy. Quando um domínio é usado, ele precisa começar com um ponto. Um usuário pode especificar que www.example.com e foo.example.com não devem usar um proxy definindo NO_PROXYcomo .example.com. Ao incluir o nome completo, você pode excluir nomes de host específicos, portanto, para www.example.comnão usar um proxy, mas ainda assim foo.example.comfazê-lo, defina NO_PROXYcomo www.example.com.
+
+O uso do sinalizador -x/ --proxysubstitui as variáveis ​​de ambiente.
+
+NetrcName
+O Unix introduziu o .netrcconceito há muito tempo. É uma maneira de um usuário especificar o nome e a senha para os sites FTP comumente visitados em um arquivo, para que você não precise digitá-los sempre que visitar esses sites. Você percebe que isso é um grande risco de segurança se alguém se apossar de suas senhas, portanto, a maioria dos programas Unix não lerá este arquivo, a menos que seja legível apenas por você (embora o curl não se importe).
+
+O Curl oferece suporte .netrca arquivos se solicitado (usando as opções -n/ --netrce --netrc-optional). Isso não se restringe apenas ao FTP, portanto, o curl pode usá-lo para todos os protocolos em que a autenticação é usada.
+
+Um arquivo simples .netrcpode ser algo como:
+
+machine curl.se login iamdaniel password mysecret
+Saída personalizada
+Para permitir que os programadores de script conheçam melhor o progresso do curl, a opção -w/ --write-outfoi introduzida. Usando isso, você pode especificar quais informações da transferência anterior deseja extrair.
+
+Para exibir a quantidade de bytes baixados junto com algum texto e uma nova linha final:
+
+curl -w 'We downloaded %{size_download} bytes\n' www.download.com
+Transferência Kerberos FTP
+Curl suporta kerberos4 e kerberos5/GSSAPI para transferências FTP. Você precisa do pacote Kerberos instalado e usado no tempo de compilação do curl para que ele esteja disponível.
+
+Primeiro, obtenha o krb-ticket da maneira normal, como com a ferramenta kinit/ kauth. Em seguida, use o curl de maneira semelhante a:
+
+curl --krb private ftp://krb4site.com -u username:fakepwd
+Não adianta uma senha no -uswitch, mas uma em branco fará com que o curl peça uma e você já digitou a senha real para kinit/ kauth.
+
+TELNET
+O suporte telnet curl é básico e fácil de usar. O Curl passa todos os dados passados ​​para ele no stdin para o servidor remoto. Conecte-se a um servidor telnet remoto usando uma linha de comando semelhante a:
+
+curl telnet://remote.server.com
+E digite os dados para passar para o servidor em stdin. O resultado será enviado para stdout ou para o arquivo que você especificar com -o.
+
+Você pode querer a opção -N/ --no-bufferpara desligar a saída em buffer para conexões lentas ou similares.
+
+Passe opções para a negociação do protocolo telnet, usando a -topção. Para informar ao servidor que usamos um terminal vt100, tente algo como:
+
+curl -tTTYPE=vt100 telnet://remote.server.com
+Outras opções interessantes para isso -tincluem:
+
+XDISPLOC=<X display>Define o local de exibição do X.
+NEW_ENV=<var,val>Define uma variável de ambiente.
+NOTA: O protocolo telnet não especifica nenhuma maneira de fazer login com um usuário e senha especificados, portanto, o curl não pode fazer isso automaticamente. Para fazer isso, você precisa rastrear quando o prompt de login é recebido e enviar o nome de usuário e a senha de acordo.
+
+Conexões Persistentes
+A especificação de vários arquivos em uma única linha de comando fará com que todos eles sejam transferidos, um após o outro, na ordem especificada.
+
+A libcurl tentará usar conexões persistentes para as transferências para que a segunda transferência para o mesmo host possa usar a mesma conexão que já foi iniciada e deixada aberta na transferência anterior. Isso diminui muito o tempo de conexão para todas as transferências, exceto a primeira, e faz um uso muito melhor da rede.
+
+Observe que o curl não pode usar conexões persistentes para transferências usadas em invocações de curl subsequentes. Tente colocar o maior número possível de URLs na mesma linha de comando se eles estiverem usando o mesmo host, pois isso tornará as transferências mais rápidas. Se você usar um proxy HTTP para transferências de arquivos, praticamente todas as transferências serão persistentes.
+
+Várias transferências com uma única linha de comando
+Conforme mencionado acima, você pode baixar vários arquivos com uma linha de comando simplesmente adicionando mais URLs. Se você deseja que eles sejam salvos em um arquivo local em vez de apenas impressos em stdout, você precisa adicionar uma opção de salvamento para cada URL especificado. Observe que isso também vale para a -Oopção (mas não --remote-name-all).
+
+Por exemplo: obtenha dois arquivos e use -Opara o primeiro e um nome de arquivo personalizado para o segundo:
+
+curl -O http://url.com/file.txt ftp://ftp.com/moo.exe -o moo.jpg
+Você também pode fazer upload de vários arquivos de maneira semelhante:
+
+curl -T local1 ftp://ftp.com/moo.exe -T local2 ftp://ftp.com/moo2.txt
+IPv6
+O curl se conectará a um servidor com IPv6 quando uma pesquisa de host retornar um endereço IPv6 e retornará ao IPv4 se a conexão falhar. As opções --ipv4e --ipv6podem especificar qual endereço usar quando ambos estiverem disponíveis. Endereços IPv6 também podem ser especificados diretamente em URLs usando a sintaxe:
+
+http://[2001:1890:1112:1::20]/overview.html
+Quando esse estilo é usado, a -gopção deve ser fornecida para impedir que o curl interprete os colchetes como caracteres especiais de globbing. Endereços locais de link e de site incluindo um identificador de escopo, como fe80::1234%1, também podem ser usados, mas a parte do escopo deve ser numérica ou corresponder a uma interface de rede existente no Linux e o caractere de porcentagem deve ter escape de URL. O exemplo anterior em um URL SFTP pode ser semelhante a:
+
+sftp://[fe80::1234%251]/
+Endereços IPv6 fornecidos além de URLs (por exemplo, para --proxy, --interfaceou --ftp-portopções) não devem ser codificados em URL.
+
+Listas de discussão
+Para sua conveniência, temos várias listas de discussão abertas para discutir o curl, seu desenvolvimento e coisas relevantes para isso. Obtenha todas as informações em https://curl.se/mail/ .
+
+Por favor, direcione as perguntas sobre curl, solicitações de recursos e relatórios de problemas para uma dessas listas de e-mail, em vez de enviar um e-mail para qualquer pessoa.
+
+As listas disponíveis incluem:
+
+curl-users
+Usuários da ferramenta de linha de comando. Como usar, o que não funciona, novos recursos, ferramentas relacionadas, perguntas, notícias, instalações, compilações, execução, portabilidade etc.
+
+curl-library
+Desenvolvedores usando ou desenvolvendo libcurl. Bugs, extensões, melhorias.
+
+curl-announce
+Baixo tráfego. Só recebe anúncios de novas versões públicas. Na pior das hipóteses, isso dá algo como um ou dois e-mails por mês, mas geralmente apenas um e-mail a cada dois meses.
+
+curl-and-php
+Usando as funções curl em PHP. Tudo enrolado com um ângulo PHP. Ou PHP com um ângulo de curvatura.
+
+curl-and-python
+Hackers Python usando curl com ou sem python pycurl de ligação.
+
+Google Tradutor
+Texto original
+Bugs, extensions, improvements.
+Sugerir uma tradução melhor
